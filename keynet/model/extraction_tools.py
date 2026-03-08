@@ -3,12 +3,13 @@ import cv2
 import numpy as np
 from os import mkdir, path
 import torch.nn.functional as F
-from model.network import KeyNet
-from model.modules import NonMaxSuppression
-from model.HyNet.hynet_model import HyNet
-from model.kornia_tools.utils import custom_pyrdown
-from model.kornia_tools.utils import laf_from_center_scale_ori as to_laf
-from model.kornia_tools.utils import extract_patches_from_pyramid as extract_patch
+from keynet.model.network import KeyNet
+from keynet.model.modules import NonMaxSuppression
+from keynet.model.HyNet.hynet_model import HyNet
+from keynet.model.kornia_tools.utils import custom_pyrdown
+from keynet.model.kornia_tools.utils import laf_from_center_scale_ori as to_laf
+from keynet.model.kornia_tools.utils import extract_patches_from_pyramid as extract_patch
+from importlib.resources  import files
 
 
 def create_result_dir(result_path):
@@ -162,7 +163,7 @@ def compute_kpts_desc(im_path, keynet_model, desc_model, conf, device, num_point
 
         src_kp_i = np.asarray(list(map(lambda x: [x[0], x[1], (1 / scale_factor_levels) ** (1 + idx_level), x[2]], src_kp_i)))
 
-        if src_kp == []:
+        if len(src_kp) == 0:
             src_kp = src_kp_i
             src_dsc = src_dsc_i
         else:
@@ -183,7 +184,7 @@ def compute_kpts_desc(im_path, keynet_model, desc_model, conf, device, num_point
 
         src_kp_i = np.asarray(list(map(lambda x: [x[0], x[1], scale_factor_levels ** idx_level, x[2]], src_kp_i)))
 
-        if src_kp == []:
+        if len(src_kp) == 0:
             src_kp = src_kp_i
             src_dsc = src_dsc_i
         else:
@@ -201,8 +202,16 @@ def initialize_networks(conf):
     '''
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda:0" if use_cuda else "cpu")
-    detector_path = conf['weights_detector']
-    descriptor_path = conf['weights_descriptor']
+    from importlib.resources import files
+
+    detector_path = str(files("keynet.model") / "weights" / "keynet_pytorch.pth")
+    descriptor_path = str(files("keynet.model.HyNet") / "weights" / "HyNet_LIB.pth")
+ 
+
+    conf.update({
+        "weights_detector": "keynet_pytorch.pth",
+        "weights_descriptor": "HyNet_LIB.pth",
+    })
 
     # Define keynet_model model
     keynet_model = KeyNet(conf)

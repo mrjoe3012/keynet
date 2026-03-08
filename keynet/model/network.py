@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from model.modules import feature_extractor
-from model.kornia_tools.utils import custom_pyrdown
+from keynet.model.modules import feature_extractor
+from keynet.model.kornia_tools.utils import custom_pyrdown
 
 class KeyNet(nn.Module):
     '''

@@ -3,7 +3,7 @@ cuda-pathfinder
 filelock
 fsspec
 jinja2
-kornia==0.1.4
+kornia
 markupsafe
 mpmath
 networkx
